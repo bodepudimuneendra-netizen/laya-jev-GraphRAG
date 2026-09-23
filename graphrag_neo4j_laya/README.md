@@ -6,13 +6,14 @@
 ![Databases](https://img.shields.io/badge/DB-Neo4j%20%7C%20Memgraph%20%7C%20AGE%20%7C%20Kùzu-018bff.svg)
 ![Backend](https://img.shields.io/badge/AI%20Backend-Laya%20%7C%20Jev%20%7C%20Ablation-blueviolet.svg)
 
-A production-grade **Agentic GraphRAG** engine that replaces slow, generative LLM routing with **System One typed-decision models**.
-Every single graph operation — from ingesting a document to returning a cited answer — is governed by exactly one of three mathematical primitives:
+A production-grade **Agentic GraphRAG** engine with swappable **System One decision models** (local Laya / cloud Jev) that **evaluate every edge and relationship** across the entire graph lifecycle.
 
-| Primitive | Meaning | Example Usage |
+Instead of calling a slow generative LLM to judge graph data, this engine uses three lightweight mathematical primitives to drive a complete **4-phase pipeline** — from document ingestion all the way through to cited answer delivery:
+
+| Primitive | What It Does | Where It's Used |
 |-----------|---------|---------------|
-| **`Score`** | Ordinal relevance `[0, 1]` | A\* edge heuristic, context reranking |
-| **`Noul`**  | Binary `P(yes)` `[0, 1]`   | Semantic chunking, hallucination gate, citation verification |
+| **`Score`** | Evaluates edges & relationships `[0, 1]` | Edge verification during ingestion, A\* traversal heuristic, context reranking |
+| **`Noul`**  | Binary judgement `P(yes)` `[0, 1]`   | Semantic chunking, entity disambiguation, early termination, hallucination gate, citation verification |
 | **`Choice`**| Categorical selection       | Intent routing, ontology alignment, conflict resolution |
 
 Switch the entire decision layer — every primitive in every phase — with **one environment variable**.
@@ -21,18 +22,21 @@ Switch the entire decision layer — every primitive in every phase — with **o
 
 ## 🛑 Why Traditional GraphRAG Fails
 
-Traditional GraphRAG calls a generative LLM at **every hop** to filter and rank graph edges.
-Evaluating 5 edges at depth 4 = 20 serial LLM calls = 30–90 seconds of latency and frequent context-window overflow.
+Traditional GraphRAG calls a generative LLM at **every hop** to filter and rank graph edges — and never verifies the edges it ingested in the first place.
+This means hallucinated relationships survive in the graph, bad seeds get selected, and the LLM runs 20+ serial calls just to traverse 4 hops.
 
-## ⚡ The Solution: System One A\* Traversal
+## ⚡ The Solution: Laya/Jev Edge & Relationship Evaluation
 
-This engine decouples traversal from generation. A tiny, fast, typed-decision model evaluates each edge in **~33 ms** (Laya on CUDA) or **~50 ms** (Jev cloud API) using a composite heuristic that blends:
+This engine uses System One decision models to **evaluate every edge and relationship** at every stage:
 
-1. **Semantic Relevance**: The edge score evaluated by the AI backend.
-2. **Structural Centrality**: The pre-calculated PageRank of the target node.
-3. **Depth Penalty**: A regularizer to prevent shallow, local looping.
+| Phase | What Laya/Jev Evaluates |
+|-------|------------------------|
+| **Ingestion** | Scores edge validity, disambiguates duplicate entities, aligns relationships to ontology |
+| **Pre-Retrieval** | Routes query intent, validates seed node relevance |
+| **Traversal** | Scores each edge dynamically during custom A\* search, gates early termination |
+| **Post-Retrieval** | Reranks context, resolves conflicting sources, gates hallucination, verifies citations |
 
-The LLM (Llama-3.1-8B 4-bit) only runs **once**, at the end, to synthesise the already-filtered subgraph into a final answer.
+The generative LLM (Llama-3.1-8B) only runs **once**, at the very end, to synthesise the already-verified subgraph into a final answer.
 
 ---
 
@@ -97,8 +101,8 @@ All four backends implement the same `BaseGraphClient` interface. Zero code chan
 │  PHASE 3 — A* Traversal (Per query)                     │
 │                                                         │
 │  10. Neighborhood Fetch    → Bolt / Cypher              │
-│  11. Edge Scoring          → Score  (S_AI heuristic)    │
-│  12. Structural Anchoring  → PageRank (C_Graph)         │
+│  11. Edge Scoring          → Score  (semantic heuristic) │
+│  12. Structural Anchoring  → PageRank (centrality)       │
 │  13. Path Pruning          → Beam cutoff                │
 │  14. Early Termination     → Noul   (context sufficient?)│
 └─────────────────────────────────────────────────────────┘
@@ -106,11 +110,11 @@ All four backends implement the same `BaseGraphClient` interface. Zero code chan
 ┌─────────────────────────────────────────────────────────┐
 │  PHASE 4 — Post-Traversal (Per query)                   │
 │                                                         │
-│  15. Context Reranking     → Score  (drop bottom 20%)   │
-│  16. Conflict Resolution   → Choice (pick credible src) │
-│  17. Hallucination Gate    → Noul   (abstain if P<0.5)  │
-│  18. Answer Synthesis      → LLM    (Llama-3.1-8B 4-bit)│
-│  19. Citation Verification → Noul   (flag if P<0.9)     │
+│  15. Context Reranking     → Score  (drop low-relevance) │
+│  16. Conflict Resolution   → Choice (pick credible src)  │
+│  17. Hallucination Gate    → Noul   (abstain if unsafe)  │
+│  18. Answer Synthesis      → LLM    (Llama-3.1-8B 4-bit) │
+│  19. Citation Verification → Noul   (flag ungrounded)    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -124,7 +128,7 @@ All four backends implement the same `BaseGraphClient` interface. Zero code chan
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/laya-jev-GraphRAG.git
+git clone https://github.com/bodepudimuneendra-netizen/laya-jev-GraphRAG.git
 cd laya-jev-GraphRAG/graphrag_neo4j_laya
 
 # Install PyTorch with CUDA 12.4 first (for your GPU)
@@ -248,10 +252,11 @@ This JSONL log is ready-to-use RLCD training data to fine-tune Laya towards Jev-
 
 ## 🤝 Contributing
 
-Contributions welcome for:
-- Additional graph DB connectors (Nebula, TigerGraph, FalkorDB etc)
-- Laya fine-tuning
-- Jev
+Contributions welcome:
+- Additional graph DB connectors (Nebula, TigerGraph, FalkorDB, etc.)
+- Laya fine-tuning scripts from ablation JSONL logs
+- Jev async/streaming support
+- New ingestion sources (PDF, HTML, Markdown)
 
 
 ---

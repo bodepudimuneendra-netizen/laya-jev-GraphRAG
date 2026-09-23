@@ -1,8 +1,12 @@
-To build a complete Agentic GraphRAG system, you are essentially building a software assembly line. At every station on this line, data must be evaluated, routed, or discarded.
+# Architecture Deep Dive: Edge & Relationship Evaluation
 
-By using a System One decision model (like local Laya or the TypeSafe Jev API), you map every single graph operation to one of three mathematical primitives: **`Choice`** (categorical routing), **`Score`** (ordinal ranking), and **`Noul`** (yes/no probability).
+The core principle of this engine is that **every edge and relationship in the knowledge graph is evaluated by a System One decision model** (local Laya or cloud Jev) — not a slow generative LLM.
 
-Here is the exhaustive master list of every function and use case across the entire GraphRAG lifecycle, detailing exactly how nodes, relationships, and queries are evaluated.
+This evaluation happens across all four phases of the pipeline: during ingestion (verifying edges the LLM extracted), during pre-retrieval (validating seed nodes), during traversal (scoring edges in real-time via a custom A* algorithm), and during post-retrieval (reranking context, resolving conflicts, gating hallucination, and verifying citations).
+
+Every evaluation maps to exactly one of three mathematical primitives: **`Choice`** (categorical routing), **`Score`** (ordinal ranking of edges/relationships), and **`Noul`** (yes/no probability judgement).
+
+Here is the exhaustive breakdown of every function, what it evaluates, and which primitive it uses.
 
 ---
 
