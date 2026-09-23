@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # ──────────────────────────────────────────────────────────────
+  # Primary Graph Database — Neo4j 5.12 with GDS + APOC
+  # Runs entirely in system RAM, leaving VRAM free for PyTorch.
+  # ──────────────────────────────────────────────────────────────
+  neo4j:
+    image: neo4j:5.12.0
+    container_name: neo4j_native
+    ports:
+      - "7474:7474"   # Browser UI  → http://localhost:7474
+      - "7687:7687"   # Bolt routing protocol
+    environment:
+      - NEO4J_AUTH=neo4j/testpassword
+      - NEO4J_PLUGINS=["graph-data-science", "apoc"]
+      - NEO4J_dbms_memory_heap_initial__size=512m
+      - NEO4J_dbms_memory_heap_max__size=2g
+      - NEO4J_dbms_memory_pagecache_size=1g
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:7474"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ──────────────────────────────────────────────────────────────
+  # Benchmark Relational Graph Extension — Apache AGE on Postgres
+  # Built with pgvector to support Hybrid GraphRAG queries.
+  # ──────────────────────────────────────────────────────────────
+  apache-age:
+    build:
+      context: ./docker/postgres-age-vector
+    container_name: postgres_age
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testpassword
+      - POSTGRES_DB=graph_db
+    volumes:
+      - age_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ──────────────────────────────────────────────────────────────
+  # High-Performance In-Memory Graph — Memgraph
+  # Compatible with Neo4j Bolt protocol, native vector support.
+  # ──────────────────────────────────────────────────────────────
+  memgraph:
+    image: memgraph/memgraph-mage:latest
+    container_name: memgraph_native
+    ports:
+      - "7688:7687"   # Bolt routing protocol (port 7688)
+      - "3000:3000"   # Memgraph Lab UI
+    environment:
+      - MEMGRAPH_LOG_LEVEL=INFO
+    volumes:
+      - memgraph_lib:/var/lib/memgraph
+      - memgraph_log:/var/log/memgraph
+      - memgraph_etc:/etc/memgraph
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  age_data:
+  memgraph_lib:
+  memgraph_log:
+  memgraph_etc:

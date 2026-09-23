@@ -1,0 +1,23 @@
+# Ignore IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment variables
+.env
+.env.local
+
+# Ignore virtual environments
+venv/
+env/
+.venv/
+
+# Ignore the brainstorming markdown files (as requested)
+github.md
+idea.md
+functions.md
+.md

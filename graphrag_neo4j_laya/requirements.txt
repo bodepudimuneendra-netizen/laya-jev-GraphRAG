@@ -1,0 +1,39 @@
+# ── PyTorch & CUDA ────────────────────────────────────────────────────────────
+# Note: For GPU support, install the appropriate CUDA wheel manually.
+# Example for CUDA 12.4:
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+torch>=2.3.0
+torchvision
+
+# ── HuggingFace Ecosystem ─────────────────────────────────────────────────────
+transformers>=4.43.0
+accelerate>=0.30.0
+bitsandbytes>=0.43.0
+huggingface-hub>=0.23.0
+sentence-transformers>=3.0.0
+
+# ── Graph Databases ───────────────────────────────────────────────────────────
+# Neo4j and Memgraph (Bolt protocol)
+neo4j>=5.20.0
+# Apache AGE (PostgreSQL extension)
+psycopg2-binary>=2.9.9
+# Kùzu (Local embedded graph database)
+kuzu>=0.6.0
+
+# ── Retrieval & Indexing ──────────────────────────────────────────────────────
+# ColBERT via RAGatouille (seed cross-encoder reranker)
+ragatouille>=0.0.8
+
+# ── Config, Utilities & Networking ────────────────────────────────────────────
+pydantic-settings>=2.3.0
+python-dotenv>=1.0.0
+numpy>=1.26.0
+scipy>=1.13.0
+networkx>=3.3
+requests>=2.31.0      # For TypeSafe Jev API HTTP calls
+
+# ── Benchmarking & Monitoring ─────────────────────────────────────────────────
+matplotlib>=3.9.0
+pandas>=2.2.0
+psutil>=6.0.0
+tqdm>=4.66.0

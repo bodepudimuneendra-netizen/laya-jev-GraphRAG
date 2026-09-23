@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "graphrag-neo4j-laya"
+version = "0.1.0"
+description = "Agentic GraphRAG pipeline: Neo4j + Laya semantic heuristics + Llama-3.1 4-bit — runs fully locally on RTX 5060"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+dependencies = [
+    # PyTorch — install CUDA version manually:
+    # pip install torch --index-url https://download.pytorch.org/whl/cu124
+    "torch>=2.3.0",
+    "torchvision",
+
+    # HuggingFace ecosystem
+    "transformers>=4.43.0",
+    "accelerate>=0.30.0",
+    "bitsandbytes>=0.43.0",
+    "huggingface-hub>=0.23.0",
+    "sentence-transformers>=3.0.0",
+
+    # Graph databases
+    "neo4j>=5.20.0",
+    "psycopg2-binary>=2.9.9",
+    "kuzu>=0.6.0",
+
+    # ColBERT via RAGatouille (seed cross-encoder reranker)
+    "ragatouille>=0.0.8",
+
+    # Config & utilities
+    "pydantic-settings>=2.3.0",
+    "python-dotenv>=1.0.0",
+    "numpy>=1.26.0",
+    "scipy>=1.13.0",
+    "networkx>=3.3",
+    "requests>=2.31.0",
+
+    # Benchmarking & monitoring
+    "matplotlib>=3.9.0",
+    "pandas>=2.2.0",
+    "psutil>=6.0.0",
+    "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "ipykernel>=6.29.0",
+    "jupyter>=1.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["graphrag*", "config*"]
+
+[project.scripts]
+graphrag-ingest  = "graphrag.ingestion.chunker:main"
+graphrag-query   = "graphrag.pipeline:main"
+graphrag-bench   = "graphrag.benchmarks.hop_latency:main"
