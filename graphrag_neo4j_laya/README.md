@@ -265,7 +265,7 @@ Contributions welcome:
 
 ## 📄 License
 
-Apache 2.0 — free for personal use only.
+Licensed under the Apache 2.0 License.
 
 Built on:
 - [Laya](https://huggingface.co/convaiinnovations/laya-typed-decisions) (Apache 2.0, ModernBERT-large)
