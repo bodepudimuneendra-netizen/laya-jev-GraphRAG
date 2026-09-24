@@ -6,9 +6,11 @@
 ![Databases](https://img.shields.io/badge/DB-Neo4j%20%7C%20Memgraph%20%7C%20AGE%20%7C%20Kùzu-018bff.svg)
 ![Backend](https://img.shields.io/badge/AI%20Backend-Laya%20%7C%20Jev%20%7C%20Ablation-blueviolet.svg)
 
-A production-grade **Agentic GraphRAG** engine with swappable **System One decision models** (local Laya / cloud Jev) that **evaluate every edge and relationship** across the entire graph lifecycle.
+Welcome to the next evolution of **Agentic GraphRAG**. 
 
-Instead of calling a slow generative LLM to judge graph data, this engine uses three lightweight mathematical primitives to drive a complete **4-phase pipeline** — from document ingestion all the way through to cited answer delivery:
+This production-ready engine replaces slow, non-deterministic generative LLMs with ultra-fast, swappable **System One decision models** (local Laya / cloud Jev). The result? **Every graph operation** — from semantic chunking and intent routing to A* traversal and hallucination gating — is executed deterministically in milliseconds.
+
+By reducing complex graph reasoning into three lightweight mathematical primitives, the engine drives a blazing-fast, complete **4-phase pipeline** — from raw document ingestion all the way to verifiable, cited answers:
 
 | Primitive | What It Does | Where It's Used |
 |-----------|---------|---------------|
@@ -25,16 +27,16 @@ Switch the entire decision layer — every primitive in every phase — with **o
 Traditional GraphRAG calls a generative LLM at **every hop** to filter and rank graph edges — and never verifies the edges it ingested in the first place.
 This means hallucinated relationships survive in the graph, bad seeds get selected, and the LLM runs 20+ serial calls just to traverse 4 hops.
 
-## ⚡ The Solution: Laya/Jev Edge & Relationship Evaluation
+## ⚡ The Solution: End-to-End System One Evaluation
 
-This engine uses System One decision models to **evaluate every edge and relationship** at every stage:
+This engine uses System One decision models to **evaluate every critical decision** at every stage of the pipeline:
 
 | Phase | What Laya/Jev Evaluates |
 |-------|------------------------|
-| **Ingestion** | Scores edge validity, disambiguates duplicate entities, aligns relationships to ontology |
-| **Pre-Retrieval** | Routes query intent, validates seed node relevance |
-| **Traversal** | Scores each edge dynamically during custom A\* search, gates early termination |
-| **Post-Retrieval** | Reranks context, resolves conflicting sources, gates hallucination, verifies citations |
+| **Ingestion** | Scores edge validity to purge hallucinations, disambiguates entities to prevent graph bloat, and aligns relationships to enforce strict schema |
+| **Pre-Retrieval** | Routes query intent to skip unnecessary compute, and validates seed nodes to guarantee the search starts at the optimal mathematical anchor |
+| **Traversal** | Laya/Jev dynamically score edges during custom A\* search for intelligent semantic routing, while gating early termination to prevent context bloat and save compute |
+| **Post-Retrieval** | Reranks context to maximize token density, resolves contradictory sources for accuracy, gates hallucinations, and strictly verifies citations before LLM synthesis |
 
 The generative LLM (Llama-3.1-8B) only runs **once**, at the very end, to synthesise the already-verified subgraph into a final answer.
 
