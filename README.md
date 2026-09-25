@@ -6,11 +6,11 @@
 ![Databases](https://img.shields.io/badge/DB-Neo4j%20%7C%20Memgraph%20%7C%20AGE%20%7C%20Kùzu-018bff.svg)
 ![Backend](https://img.shields.io/badge/AI%20Backend-Laya%20%7C%20Jev%20%7C%20Ablation-blueviolet.svg)
 
-Welcome to the next evolution of **Agentic GraphRAG**. 
+**laya-jev-GraphRAG** is a **graph-database-agnostic Agentic GraphRAG framework** — a production-ready intelligence layer you drop on top of your existing graph database to make it fully agentic. It doesn't replace your graph DB; it gives it a brain.
 
-This production-ready engine replaces slow, non-deterministic generative LLMs with ultra-fast, swappable **System One decision models** (local Laya / cloud Jev). The result? **Every graph operation** — from semantic chunking and intent routing to A* traversal and hallucination gating — is executed deterministically in milliseconds.
+Instead of hard-wiring GraphRAG logic to a single database, this framework **completely decouples the AI decision layer from the storage layer**. The same complete **4-phase pipeline** (Ingestion → Pre-Retrieval → Traversal → Post-Retrieval) runs identically across Neo4j, Memgraph, Apache AGE, and Kùzu — switched with one environment variable.
 
-By reducing complex graph reasoning into three lightweight mathematical primitives, the engine drives a blazing-fast, complete **4-phase pipeline** — from raw document ingestion all the way to verifiable, cited answers:
+Every decision inside that pipeline — from semantic chunking and intent routing to custom A\* traversal and hallucination gating — is handled by swappable **System One models** (local Laya / cloud Jev) using three deterministic mathematical primitives instead of slow generative LLM calls:
 
 | Primitive | What It Does | Where It's Used |
 |-----------|---------|---------------|
@@ -18,7 +18,7 @@ By reducing complex graph reasoning into three lightweight mathematical primitiv
 | **`Noul`**  | Binary judgement `P(yes)` `[0, 1]`   | Semantic chunking, entity disambiguation, early termination, hallucination gate, citation verification |
 | **`Choice`**| Categorical selection       | Intent routing, ontology alignment, conflict resolution |
 
-Switch the entire decision layer — every primitive in every phase — with **one environment variable**.
+Switch the **AI decision model** AND the **graph database** — both independently, with a single environment variable each.
 
 ---
 
@@ -39,6 +39,59 @@ This engine uses System One decision models to **evaluate every critical decisio
 | **Post-Retrieval** | Reranks context to maximize token density, resolves contradictory sources for accuracy, gates hallucinations, and strictly verifies citations before LLM synthesis |
 
 The generative LLM (Llama-3.1-8B) only runs **once**, at the very end, to synthesise the already-verified subgraph into a final answer.
+
+---
+
+## 🧠 Architecture Philosophy: Three Separated Layers
+
+Most GraphRAG systems tightly couple storage, reasoning, and generation into one hard-to-swap stack. This framework separates them into **three fully independent layers**:
+
+```
+┌───────────────────────────────────────────────────────┐
+│  LAYER 1 — STORAGE  (Your Graph DB)                   │
+│  Neo4j · Memgraph · Apache AGE · Kùzu                 │
+│  Handles: graph structure, PageRank, Cypher queries    │
+└───────────────────────────┬───────────────────────────┘
+                            │
+┌───────────────────────────▼───────────────────────────┐
+│  LAYER 2 — DECISION  (Laya / Jev)   ← The CPU         │
+│  Handles: every routing, scoring, and gating decision  │
+│  Score · Noul · Choice across all 19 pipeline steps    │
+└───────────────────────────┬───────────────────────────┘
+                            │
+┌───────────────────────────▼───────────────────────────┐
+│  LAYER 3 — GENERATION  (Llama-3.1-8B 4-bit)           │
+│  Handles: entity extraction (ingestion) +              │
+│           final answer synthesis (post-retrieval)      │
+│  Runs exactly TWICE per document lifecycle             │
+└───────────────────────────────────────────────────────┘
+```
+
+Laya/Jev act as the **CPU of your knowledge graph** — the high-speed decision engine routing data between storage and generation without ever generating a single token themselves.
+
+### 🔄 The 2-Axis Swappability
+
+This is the key architectural decision: **both axes are independent**.
+
+| Axis | Options | How to Switch |
+|------|---------|---------------|
+| **AI Decision Model** | Laya (local GPU) ↔ Jev (cloud API) ↔ Ablation (both) | `DECISION_MODEL_BACKEND=laya\|jev\|ablation` |
+| **Graph Database** | Neo4j ↔ Memgraph ↔ Apache AGE ↔ Kùzu | `GRAPH_DB_BACKEND=neo4j\|memgraph\|age\|kuzu` |
+
+You can run **Jev + Neo4j** in production, **Laya + Kùzu** for local development with zero Docker, or **Ablation + Memgraph** to generate training data — all from the same codebase with zero code changes.
+
+### 🔁 The RLCD Flywheel: From Cloud to Fully Local
+
+The framework is designed around a self-improving loop:
+
+```
+1. START  →  Deploy with Jev (cloud API, zero-shot accurate, instant setup)
+2. COLLECT →  Ablation mode logs every Laya vs. Jev decision side-by-side to JSONL
+3. TRAIN   →  Use those JSONL logs as RLCD synthetic training data to fine-tune Laya
+4. SWITCH  →  Flip DECISION_MODEL_BACKEND=laya for 100% local, zero API cost
+```
+
+The end state: a **fully local, frontier-quality GraphRAG engine** on your own hardware with no API dependency and no data leaving your network.
 
 ---
 
