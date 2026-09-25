@@ -171,6 +171,9 @@ All four graph DB backends implement the same `BaseGraphClient` interface. **Zer
 > **📚 Want to see the full breakdown of all 19 functions?**
 > Check out the [Architecture Deep Dive (ARCHITECTURE.md)](ARCHITECTURE.md) for a complete breakdown of every primitive and routing decision across all 4 phases.
 
+> **💡 Is this a Static Knowledge Store or an Agentic Memory? (And wild use cases)**
+> Check out [Use Cases (USE_CASES.md)](USE_CASES.md) to see how the decoupled intelligence layer allows this to act as both a high-fidelity query engine (fraud, bio-med) and a self-organizing memory store for autonomous agents etc.
+
 ---
 
 ## 🚀 Getting Started
