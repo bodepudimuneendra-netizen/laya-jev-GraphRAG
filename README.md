@@ -8,7 +8,9 @@
 
 **laya-jev-GraphRAG** is a **graph-database-agnostic Agentic GraphRAG framework** — a production-ready intelligence layer you drop on top of your existing graph database to make it fully agentic. It doesn't replace your graph DB; it gives it a brain.
 
-Instead of hard-wiring GraphRAG logic to a single database, this framework **completely decouples the AI decision layer from the storage layer**. The same complete **4-phase pipeline** (Ingestion → Pre-Retrieval → Traversal → Post-Retrieval) runs identically across Neo4j, Memgraph, Apache AGE, and Kùzu — switched with one environment variable.
+Instead of hard-wiring GraphRAG logic to a single database, this framework **completely decouples the AI decision layer from the storage layer**. The same complete **4-phase pipeline** (Ingestion → Pre-Retrieval → Traversal → Post-Retrieval) and evaluation runs identically across Neo4j, Memgraph, Apache AGE, and Kùzu — switched with one environment variable.
+
+At its core, this framework **continuously evaluates every single edge and relationship** across the entire lifecycle of the data. From the moment data enters the graph (Ingestion/Pre-Retrieval), through real-time multi-hop navigation (Traversal), to final synthesis (Post-Retrieval), the engine actively scores, builds, and prunes connections.
 
 Every decision inside that pipeline — from semantic chunking and intent routing to custom A\* traversal and hallucination gating — is handled by swappable **System One models** (local Laya / cloud Jev) using three deterministic mathematical primitives instead of slow generative LLM calls:
 
