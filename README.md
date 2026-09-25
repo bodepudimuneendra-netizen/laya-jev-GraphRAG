@@ -24,12 +24,15 @@ Switch the **AI decision model** AND the **graph database** — both independent
 
 ## 🛑 Why Traditional GraphRAG Fails
 
-Traditional GraphRAG calls a generative LLM at **every hop** to filter and rank graph edges — and never verifies the edges it ingested in the first place.
-This means hallucinated relationships survive in the graph, bad seeds get selected, and the LLM runs 20+ serial calls just to traverse 4 hops.
+Traditional GraphRAG has three fundamental problems:
+
+1. **LLM at every hop** — Evaluating 5 edges at depth 4 = 20 serial LLM calls = 30–90 seconds of latency and frequent context-window overflow.
+2. **No edge verification** — Hallucinated relationships extracted at ingestion time are blindly trusted forever. Bad data compounds through every hop.
+3. **Database lock-in** — Traditional implementations hard-wire graph logic to a single database. Swapping Neo4j for Memgraph or AGE requires rewriting the entire pipeline.
 
 ## ⚡ The Solution: End-to-End System One Evaluation
 
-This engine uses System One decision models to **evaluate every critical decision** at every stage of the pipeline:
+This framework solves all three — replacing LLM routing with System One models, actively verifying every edge during ingestion, and abstracting the database entirely behind a unified interface:
 
 | Phase | What Laya/Jev Evaluates |
 |-------|------------------------|
@@ -95,15 +98,19 @@ The end state: a **fully local, frontier-quality GraphRAG engine** on your own h
 
 ---
 
-## 🔌 Pluggable Architecture
-
-### AI Backend — Swap with One Line
+## 🔌 Backend Configuration
 
 ```bash
-# .env
+# AI Decision Model (.env)
 DECISION_MODEL_BACKEND=laya      # Local CUDA, free, ~33ms/call, ~1.2 GB VRAM
 DECISION_MODEL_BACKEND=jev       # TypeSafe cloud API, zero-shot ready, ~50ms/call
 DECISION_MODEL_BACKEND=ablation  # Run BOTH, log side-by-side for RLCD fine-tuning
+
+# Graph Database (.env)
+GRAPH_DB_BACKEND=neo4j       # Production: index-free adjacency, native GDS
+GRAPH_DB_BACKEND=memgraph    # In-memory Bolt: identical Cypher, low-latency analytics
+GRAPH_DB_BACKEND=age         # PostgreSQL + Apache AGE: unified SQL/graph stack
+GRAPH_DB_BACKEND=kuzu        # Embedded local: no Docker, zero setup for development
 ```
 
 | Feature | Laya (Local) | Jev (Cloud) |
@@ -114,19 +121,7 @@ DECISION_MODEL_BACKEND=ablation  # Run BOTH, log side-by-side for RLCD fine-tuni
 | Privacy | 100% local | API |
 | Batch | GPU-batched | True parallel (1 API call) |
 
-**Ablation mode** logs `latency_ms`, `score`, and `delta` for every call — giving you automatic RLCD training data to fine-tune Laya towards Jev-level accuracy.
-
-### Graph Database — Swap with One Line
-
-```bash
-# .env
-GRAPH_DB_BACKEND=neo4j       # Production: index-free adjacency, native GDS
-GRAPH_DB_BACKEND=memgraph    # In-memory Bolt: identical Cypher, low-latency analytics
-GRAPH_DB_BACKEND=age         # PostgreSQL + Apache AGE: unified SQL/graph stack
-GRAPH_DB_BACKEND=kuzu        # Embedded local: no Docker, zero setup for development
-```
-
-All four backends implement the same `BaseGraphClient` interface. Zero code changes needed.
+All four graph DB backends implement the same `BaseGraphClient` interface. **Zero code changes** needed when switching databases.
 
 ---
 
@@ -173,8 +168,8 @@ All four backends implement the same `BaseGraphClient` interface. Zero code chan
 └─────────────────────────────────────────────────────────┘
 ```
 
-> **📚 Want to see the exact prompts and logic for all 19 functions?**  
-> Check out the [Architecture Deep Dive (ARCHITECTURE.md)](ARCHITECTURE.md) for a complete breakdown of every primitive, threshold, and routing decision.
+> **📚 Want to see the full breakdown of all 19 functions?**
+> Check out the [Architecture Deep Dive (ARCHITECTURE.md)](ARCHITECTURE.md) for a complete breakdown of every primitive and routing decision across all 4 phases.
 
 ---
 

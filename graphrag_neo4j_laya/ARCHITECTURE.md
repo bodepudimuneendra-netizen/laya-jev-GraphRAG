@@ -2,6 +2,8 @@
 
 The core principle of this engine is that **every edge and relationship in the knowledge graph is evaluated by a System One decision model** (local Laya or cloud Jev) — not a slow generative LLM.
 
+This solves the three fundamental problems of traditional GraphRAG: LLM-at-every-hop latency, unverified hallucinated edges surviving in the graph, and hard-coded database lock-in. The evaluation layer is completely decoupled from the storage layer.
+
 This evaluation happens across all four phases of the pipeline: during ingestion (verifying edges the LLM extracted), during pre-retrieval (validating seed nodes), during traversal (scoring edges in real-time via a custom A* algorithm), and during post-retrieval (reranking context, resolving conflicts, gating hallucination, and verifying citations).
 
 Every evaluation maps to exactly one of three mathematical primitives: **`Choice`** (categorical routing), **`Score`** (ordinal ranking of edges/relationships), and **`Noul`** (yes/no probability judgement).
