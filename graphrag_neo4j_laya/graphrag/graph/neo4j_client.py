@@ -62,19 +62,15 @@ class Neo4jClient(BaseGraphClient):
                 "CREATE CONSTRAINT unique_node_name IF NOT EXISTS "
                 "FOR (n:Entity) REQUIRE n.name IS UNIQUE"
             )
-            # Vector index for cosine-similarity seed selection (Neo4j 5.11+)
-            s.run(
-                """
-                CREATE VECTOR INDEX entity_embedding IF NOT EXISTS
-                FOR (n:Entity) ON (n.embedding)
-                OPTIONS {
-                    indexConfig: {
-                        `vector.dimensions`: 384,
-                        `vector.similarity_function`: 'cosine'
-                    }
-                }
-                """
-            )
+            # Vector index for cosine-similarity seed selection (Neo4j 5.x)
+            try:
+                s.run(
+                    "CALL db.index.vector.createNodeIndex("
+                    "'entity_embedding', 'Entity', 'embedding', 384, 'cosine')"
+                )
+            except Exception as e:
+                if "already exists" not in str(e).lower():
+                    logger.warning("Vector index creation failed: %s", e)
         logger.info("Neo4j schema created (constraints + vector index).")
 
     # ── Node operations ───────────────────────────────────────────────────────

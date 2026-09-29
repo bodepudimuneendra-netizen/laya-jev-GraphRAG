@@ -21,9 +21,17 @@ class Settings(BaseSettings):
     )
 
     # ── Graph Database Selection ──────────────────────────────────────────────
-    graph_db_type: str = Field(
+    # GRAPH_DB_BACKEND is the canonical env var (as shown in README).
+    # GRAPH_DB_TYPE is a legacy alias and is checked as a fallback.
+    # Accepted values: neo4j | memgraph | age | kuzu
+    # 'age' is normalised to 'postgres_age' internally.
+    graph_db_backend: str = Field(
         "neo4j",
-        description="Which graph DB to use: 'neo4j', 'postgres_age', 'memgraph', or 'kuzu'",
+        description="Which graph DB to use: 'neo4j' | 'memgraph' | 'age' | 'kuzu'",
+    )
+    graph_db_type: str = Field(
+        "",
+        description="Legacy alias for graph_db_backend. Prefer GRAPH_DB_BACKEND.",
     )
 
     # ── Neo4j & Memgraph ──────────────────────────────────────────────────────

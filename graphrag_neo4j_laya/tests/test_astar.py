@@ -16,7 +16,7 @@ from graphrag.retrieval.traversal.astar import LayaGraphNavigator, _FrontierNode
 
 def _make_navigator(neighbors_map: dict, laya_scores: dict | None = None) -> LayaGraphNavigator:
     """
-    Build a LayaGraphNavigator with mocked Neo4j + Laya dependencies.
+    Build a LayaGraphNavigator with mocked graph client + decision model dependencies.
 
     Parameters
     ----------
@@ -25,10 +25,12 @@ def _make_navigator(neighbors_map: dict, laya_scores: dict | None = None) -> Lay
     laya_scores:
         {(context_substr, instruction_substr): score}  — if None, always returns 0.8.
     """
-    mock_neo4j = MagicMock()
-    mock_neo4j.get_neighbors.side_effect = lambda name: neighbors_map.get(name, [])
+    mock_db = MagicMock()
+    mock_db.get_neighbors.side_effect = lambda name: neighbors_map.get(name, [])
 
     mock_laya = MagicMock()
+    # noul() used for early termination — default to below threshold so traversal continues
+    mock_laya.noul.return_value = 0.1
     if laya_scores is None:
         mock_laya.score.return_value = 0.8
     else:
@@ -40,7 +42,7 @@ def _make_navigator(neighbors_map: dict, laya_scores: dict | None = None) -> Lay
         mock_laya.score.side_effect = _score
 
     nav = LayaGraphNavigator.__new__(LayaGraphNavigator)
-    nav._neo4j     = mock_neo4j
+    nav._db        = mock_db   # FIX: was nav._neo4j — class attribute is _db
     nav._laya      = mock_laya
     nav.ALPHA      = 0.65
     nav.BETA       = 0.25
